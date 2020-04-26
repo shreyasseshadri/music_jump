@@ -1,0 +1,19 @@
+{
+	"manifest_version": 2,
+	"name": "Playlist Migrator",
+	"version": "1.0",
+	"description": "Migrates playlist",
+	"icons": {
+		"48": "icons/border-48.png"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"*://music.amazon.in/*"
+			],
+			"js": [
+				"main.js"
+			]
+		}
+	]
+}
