@@ -1,0 +1,64 @@
+shreyas:
+    user_id = ttx1gpej20552zpv12kplq0ky
+    Oauth Token = oath_token
+
+MIGRATING FROM SPOTIFY
+
+GET all the playlists of the user with user_id
+Endpoint: /v1/users/{user_id}/playlists
+    fetch("https://api.spotify.com/v1/users/ttx1gpej20552zpv12kplq0ky/playlists",{
+        "headers": {
+            "Authorization": "Bearer {oath_token}"
+        }}),
+    "method": "GET"
+    }).then((res) => res.json()).then(json => console.log(json))
+
+
+GET all tracks of a particular playlist
+Endpoint: /v1/playlists/{playlist_id}/tracks
+eg playlist_id = 4rGoFjChJLDAVExn1aRjLS
+
+-----------------------------------------------------------------------------------------------------
+MIGRATING INTO SPOTIFY
+
+POST Create a playlist 
+Endpoint: /v1/users/{user_id}/playlists
+This reuturns a playlist id which is stored for later purposes.
+    fetch("https://api.spotify.com/v1/users/ttx1gpej20552zpv12kplq0ky/playlists", {
+    "headers": {
+        "authorization": "Bearer {oath_token}"
+    },
+    "body": JSON.stringify({
+            "name": "Dummy Playlist",
+            "description": "New playlist description",
+            "public": false
+        }),
+    "method": "POST"
+    }).then((res) => res.json()).then(json => console.log(json));
+
+    Response playlist id: "1tRbFs2jQp7DXy96G8Fjna"
+
+GET search for spotify track URI based on search query (searching based on artist and track name for now, and limiting search results to 2 to avoid noise)
+Endpoint: /v1/search?q=track:{track_name}+artist:{artist_name}&type=tracks&limit={limit_value}
+    fetch("https://api.spotify.com/v1/search?q=track:thunder+artist:Imagine+Dragons&type=track&limit=2", {
+    "headers": {
+        "authorization": "Bearer {oath_token}",
+    },
+    "method": "GET",
+    }).then((res) => res.json()).then(json => console.log(json));
+
+    Response track URI: "spotify:track:1zB4vmk8tFRmM9UULNzbLB"
+    Response track URI for Alone(by marshmello): "spotify:track:3MEYFivt6bilQ9q9mFWZ4g"
+
+POST add items to spotify playlist based on track URIs (Max 100 tracks can be added)
+Endpoint: /v1/playlists/{playlist_id}/tracks
+    fetch("https://api.spotify.com/v1/playlists/1tRbFs2jQp7DXy96G8Fjna/tracks", {
+    "headers": {
+        "authorization": "Bearer {oath_token}"
+    },
+    "body": JSON.stringify({
+            "uris": ["spotify:track:1zB4vmk8tFRmM9UULNzbLB","spotify:track:3MEYFivt6bilQ9q9mFWZ4g"]
+        }),
+    "method": "POST"
+    }).then((res) => res.json()).then(json => console.log(json));
+    

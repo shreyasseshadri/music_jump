@@ -99,7 +99,7 @@ function authSpotify(){
 	const authUrl = 'https://accounts.spotify.com/authorize';
 	const params = {
 		response_type: 'code',
-		redirect_uri: encodeURIComponent('http://localhost:3000/auth/spotify'),
+		redirect_uri: encodeURIComponent('http://localhost:3000/api/v1/auth/spotify'),
 		state: 'random_string_shreyas'
 	}
 	const scope = "playlist-modify-public playlist-read-private playlist-modify-private"
