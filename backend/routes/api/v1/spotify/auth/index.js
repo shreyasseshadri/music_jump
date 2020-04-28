@@ -2,18 +2,23 @@ var express = require('express');
 const fetch = require('node-fetch');
 const httpStatus = require('http-status-codes')
 var router = express.Router();
+var redis = require('redis');
+const { schemaUrl } = process.env
+if(!schemaUrl) console.log('Schema Url not set');
+var redisClient = redis.createClient(schemaUrl);
+redisClient.on("error",(err) => console.log(err));
 
 const { clientAppId, clientSecret } = process.env;
-const myState = 'random_string_shreyas'
-const userID = 'ttx1gpej20552zpv12kplq0ky'
+const myState = 'random_string_shreyas';
 
 router.get('/authorize', function (req, res) {
 	const authUrl = 'https://accounts.spotify.com/authorize';
+	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private"];
 	const params = {
 		client_id: clientAppId,
 		response_type: 'code',
 		redirect_uri: 'http://localhost:3000/api/v1/spotify/auth/callback',
-		scope: "user-read-private playlist-modify-public playlist-read-private playlist-modify-private",
+		scope: scopes.join(' '),
 		state: myState,
 	}
 	const urlEncodedBody = Object.keys(params)
@@ -64,7 +69,18 @@ router.get('/callback', function (req, res) {
 		}
 		const { access_token, refresh_token } = json;
 		getUser(access_token, (err, user) => {
+			if (err) {
+				if (err.status === httpStatus.INTERNAL_SERVER_ERROR) {
+					res.send(err.status);
+					console.log(err.message);
+					return;
+				}
+				res.status(err.status).send(`Error while retrieving user info: ${err.message}`);
+				return;
+			}
 			res.json(user);
+			redisClient.set(user.id,JSON.stringify(user));
+			redisClient.get(user.id,redis.print);
 		});
 	});
 
@@ -77,9 +93,14 @@ function getUser(access_token, callback) {
 		},
 		"method": "GET"
 	})
-		.then(r => r.json())
-		.then(user => callback(null, user))
-		.catch(e => callback(e, null));
+		.then(async (resp) => {
+			const json = await resp.json();
+			if (resp.status !== httpStatus.OK) {
+				callback(json.error, null);
+			}
+			else callback(null, json);
+		})
+		.catch((e) => callback({ status: httpStatus.INTERNAL_SERVER_ERROR, message: e.message }, null));
 }
 
 
