@@ -1,9 +1,12 @@
-# MMS (Music migration system) and PMS (Playlist Migration System)
+# Music migration system
 
 ```
-extenstions/
-    |__chrome/
-    |__firefox/
+.
+|___extenstions/
+|       |__chrome/
+|       |__firefox/
+|___backend/
+
 ```
 
 ## Ownership
