@@ -1,18 +1,24 @@
-{
+ {
     "manifest_version": 2,
-    "name": "Music Jump",
-    "version": "0.1",
-    "permissions": ["tabs"],
+    "name": "Playlist Migrator",
+	"version": "1.0",
+	"description": "Migrates playlist",
+	"permissions": ["tabs"],
+	"icons": {
+		"48": "icons/border-48.png"
+	},
+	"web_accessible_resources": [
+		"content.js"
+	],
     "content_scripts": [
       {
         "matches": [
-          "<all_urls>"
+			"*://music.amazon.in/*",
+			"*://open.spotify.com/*"
         ],
-        "js": [ "content.js"]
+		"js": [ 
+			"contentScript.js"
+		]
       }
-    ],
-    "browser_action": {},
-    "background": {
-        "scripts": ["background.js"]
-    }
+    ]
   }

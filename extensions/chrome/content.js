@@ -1,37 +1,111 @@
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-        switch(request.message){
-            case "clicked_browser_action":{
-                var playlist_objects = []
-                var playlist_elements = Array.from(document.getElementsByClassName('ownedPlaylist')); 
-                if(playlist_elements){
-                    playlist_elements.map((playlist) => {
-                        var a_tag = playlist.getElementsByTagName('a')[0]
-                        if(a_tag){
-                            playlist_objects.push({
-                                name: a_tag.innerHTML,
-                                link: a_tag.href
-                            })
-        
-                        }
-                    })
-                }
-                console.log("content",playlist_objects)
-                sendResponse({"playlists":playlist_objects})
-                break
-            }
-            case "opened_tab":{
-                (async () => {
-    
-                    await sleep(10000)
-                    var songTitles = Array.from(document.querySelectorAll("td.title")).map((title) => title.getAttribute("title"))
-                    sendResponse({"titles":songTitles})
-                })()
-                break
-            }
-        }
-        return true
-    }
-  );
+config = window.applicationContextConfiguration;
+
+function getPlaylists(cb) {
+	fetch("https://music.amazon.in/EU/api/playlists/", {
+		"credentials": "include",
+		"headers": {
+			"User-Agent": navigator.userAgent,
+			"Accept": "*/*",
+			"Accept-Language": "en-US,en;q=0.5",
+			"content-type": "application/json",
+			"Content-Encoding": "amz-1.0",
+			"X-Amz-Target": "com.amazon.musicplaylist.model.MusicPlaylistService.getOwnedPlaylistsInLibrary",
+			"csrf-token": config.CSRFTokenConfig.csrf_token,
+			"csrf-rnd": config.CSRFTokenConfig.csrf_rnd,
+			"csrf-ts": config.CSRFTokenConfig.csrf_ts,
+			"X-Requested-With": "XMLHttpRequest"
+		},
+		"referrer": "https://music.amazon.in/home",
+		"body": JSON.stringify({
+			pageSize: 100, entryOffset: 0,
+			deviceId: config.deviceId,
+			deviceType: config.deviceType,
+			musicTerritory: config.musicTerritory,
+			customerId: config.customerId
+		}),
+		"method": "POST",
+		"mode": "cors"
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		throw new Error(res.statusText);
+	}).then(data => cb(null, data)).catch(err => cb(err));
+}
+
+function getTracks(playlistIds, cb) {
+	fetch("https://music.amazon.in/EU/api/playlists/", {
+		"credentials": "include",
+		"headers": {
+			"User-Agent": navigator.userAgent,
+			"Accept": "*/*",
+			"Accept-Language": "en-US,en;q=0.5",
+			"content-type": "application/json",
+			"Content-Encoding": "amz-1.0",
+			"X-Amz-Target": "com.amazon.musicplaylist.model.MusicPlaylistService.getPlaylistsByIdV2",
+			"csrf-token": config.CSRFTokenConfig.csrf_token,
+			"csrf-rnd": config.CSRFTokenConfig.csrf_rnd,
+			"csrf-ts": config.CSRFTokenConfig.csrf_ts,
+			"X-Requested-With": "XMLHttpRequest"
+		},
+		"referrer": "https://music.amazon.in/home",
+		"body": JSON.stringify({
+			playlistIds: playlistIds,
+			requestedMetadata: ["asin", "albumName", "albumAsin", "sortAlbumName", "artistName", "artistAsin", "primeStatus", "isMusicSubscription", "duration", "sortArtistName", "sortAlbumArtistName", "objectId", "title", "status", "assetType", "discNum", "trackNum", "instantImport", "purchased", "uploaded", "fileExtension", "fileName", "parentalControls"],
+			deviceId: config.deviceId,
+			deviceType: config.deviceType,
+			musicTerritory: config.musicTerritory,
+			customerId: config.customerId
+		}),
+		"method": "POST",
+		"mode": "cors"
+	}).then(res => {
+		if (res.ok) {
+			return res.json()
+		}
+		throw new Error(res.statusText);
+	}).then(data => cb(null, data)).catch(err => cb(err));
+}
+
+
+function getPlaylistData(cb) {
+	getPlaylists((err, playlistData) => {
+		if (err) {
+			return cb(err);
+		}
+		let playlistIds = playlistData.playlists.map(d => d.playlistId);
+		getTracks(playlistIds, (err, data) => {
+			if (err) {
+				return cb(err);
+			}
+			let playlistData = data.playlists.map(d => ({
+				title: d.metadata.title,
+				tracks: d.tracks.map(t => ({
+					title: t.metadata.requestedMetadata.title,
+					album: t.metadata.requestedMetadata.albumName,
+					artist: t.metadata.requestedMetadata.artistName,
+				}))
+			}));
+			cb(null, playlistData);
+		});
+	})
+}
+
+// getPlaylistData((err, data) => console.log(data))
+
+function authSpotify(){
+	console.log('here')
+	const clientId = '6ee41ec949c1410e88baf26295177434';
+	const authUrl = 'https://accounts.spotify.com/authorize';
+	const params = {
+		response_type: 'code',
+		redirect_uri: encodeURIComponent('http://localhost:3000/auth/spotify'),
+		state: 'random_string_shreyas'
+	}
+	const scope = "playlist-modify-public playlist-read-private playlist-modify-private"
+	const requestUrl = authUrl+'?client_id='+clientId+'&response_type=' + params.response_type
+	+'&redirect_uri=' + params.redirect_uri + '&scope=' + encodeURIComponent(scope) + '&state=' + params.state;
+	window.location = requestUrl;
+	// fetch(requestUrl,{'mode':'cors'}).then((resp) => resp.text()).then(html => document.body.innerHTML = html)
+}
+authSpotify();
