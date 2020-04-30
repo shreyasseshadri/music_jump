@@ -1,11 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Music Jump</title>
 </head>
+
 <body>
-	<a href="/api/v1/spotify/auth/authorize">Connect with spotify</button>
+	<div>
+		<a href="/api/v1/spotify/auth/authorize">Connect with spotify</a>
+	</div>
+	<div>
+		<h4>User info</h4>
+		<form action="/api/v1/auth/me" method="GET">
+			<button type="submit">get info</button>
+		</form>
+	</div>
+	<div>
+		<h4>Login</h4>
+		<form action="/api/v1/auth/login" method="POST">
+			<input type="text" name="username">
+			<input type="password" name="password">
+			<button type="submit">login</button>
+		</form>
+	</div>
+	<div>
+		<h4>Logout</h4>
+		<form action="/api/v1/auth/logout" method="POST">
+			<button type="submit">logout</button>
+		</form>
+	</div>
+	<div>
+		<h4>Signup</h4>
+		<form action="/api/v1/auth/signup" method="POST">
+			<input type="text" name="username">
+			<input type="password" name="password">
+			<button type="submit">signup</button>
+		</form>
+	</div>
 </body>
+
 </html>

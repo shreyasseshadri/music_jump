@@ -2,11 +2,7 @@ var express = require('express');
 const fetch = require('node-fetch');
 const httpStatus = require('http-status-codes')
 var router = express.Router();
-var redis = require('redis');
-const { schemaUrl } = process.env
-if(!schemaUrl) console.log('Schema Url not set');
-var redisClient = redis.createClient(schemaUrl);
-redisClient.on("error",(err) => console.log(err));
+const { redisClient } = require('../../../../../redis');
 
 const { clientAppId, clientSecret } = process.env;
 const myState = 'random_string_shreyas';
@@ -79,8 +75,8 @@ router.get('/callback', function (req, res) {
 				return;
 			}
 			res.json(user);
-			redisClient.set(user.id,JSON.stringify(user));
-			redisClient.get(user.id,redis.print);
+			redisClient.set(user.id, JSON.stringify(user));
+			redisClient.get(user.id, redis.print);
 		});
 	});
 
