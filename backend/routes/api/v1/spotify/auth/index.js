@@ -1,7 +1,8 @@
 var express = require('express');
 const fetch = require('node-fetch');
-const httpStatus = require('http-status-codes')
+const httpStatus = require('http-status-codes');
 var router = express.Router();
+const { urlEncodedBody } = require('../../../../../helpers');
 const { redisClient, spotifyCredKey, spotifyAccessTokenKey } = require('../../../../../redis');
 
 const { clientAppId, clientSecret } = process.env;
@@ -17,10 +18,7 @@ router.get('/authorize', function (req, res) {
 		scope: scopes.join(' '),
 		state: myState,
 	}
-	const urlEncodedBody = Object.keys(params)
-		.map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
-		.join('&');
-	res.redirect(`${authUrl}?${urlEncodedBody}`);
+	res.redirect(`${authUrl}?${urlEncodedBody(params)}`);
 });
 
 router.get('/callback', function (req, res) {
@@ -46,17 +44,13 @@ router.get('/callback', function (req, res) {
 		redirect_uri: "http://localhost:3000/api/v1/spotify/auth/callback"
 	};
 
-	const urlEncodedBody = Object.keys(postBody).map((key) => {
-		return encodeURIComponent(key) + '=' + encodeURIComponent(postBody[key]);
-	}).join('&');
-
 	fetch(apiTokenUrl, {
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
 			'Authorization': 'Basic ' + Buffer.from(clientAppId + ':' + clientSecret).toString('base64')
 		},
 		method: "POST",
-		body: urlEncodedBody
+		body: urlEncodedBody(postBody)
 	}).then(async (resp) => {
 		const json = await resp.json();
 		if (resp.status !== httpStatus.OK) {
