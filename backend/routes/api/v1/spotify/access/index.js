@@ -5,7 +5,7 @@ var router = express.Router();
 var { redisClient, spotifyCredKey, spotifyAccessTokenKey } = require('../../../../../redis');
 const { body, validationResult } = require('express-validator');
 const { getToken } = require("./token")
-const { customFetch, urlEncodedBody } = require("../../../../../helpers")
+const { customFetch,urlEncodedBody } = require("../../../../../helpers")
 
 function makePlaylist({ playlistName, playlistDesc }, spotify_id, access_token, callback) {
 	var fetchOptions = {
@@ -21,6 +21,44 @@ function makePlaylist({ playlistName, playlistDesc }, spotify_id, access_token, 
 	}
 	customFetch(`https://api.spotify.com/v1/users/${spotify_id}/playlists`, fetchOptions, httpStatus.CREATED, callback);
 }
+
+function search(query, access_token, callback) {
+	var fetchOptions = {
+		"headers": {
+			"authorization": `Bearer ${access_token}`
+		}
+	}
+	customFetch(`https://api.spotify.com/v1/search?${query}`,fetchOptions,httpStatus.OK, callback);
+}
+
+router.get('/search', function (req, res) {
+	redisClient.hgetall(spotifyCredKey(req.user.username), (err, user) => {
+		if (err) {
+			res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+			console.log(`Error while retrieving spotify credentials: ${err}`);
+			return;
+		}
+
+		getToken(req.user.username, user.refresh_token, (err, access_token) => {
+			if (access_token){
+				console.log(access_token);
+				search(urlEncodedBody(req.query),access_token,(err,resp) => {
+					if(resp){
+						res.json(resp);
+					}
+					else {
+						res.sendStatus(err.status);
+						console.log(`Error while searching : ${err.message}`);
+					}
+				})
+			}
+			else {
+				req.sendStatus(err.status);
+				console.log(err.message);
+			}
+		});
+	})
+});
 
 router.post('/makePlaylist', [
 	body('playlistName').not().isEmpty().trim(),
@@ -40,8 +78,8 @@ router.post('/makePlaylist', [
 				return;
 			}
 
-			getToken(req.user.username,user.refresh_token,(err,access_token) => {
-				if(access_token){
+			getToken(req.user.username, user.refresh_token, (err, access_token) => {
+				if (access_token) {
 					makePlaylist(req.body, user.spotify_id, access_token, (err, resp) => {
 						if (err) {
 							res.sendStatus(err.status);
@@ -53,8 +91,7 @@ router.post('/makePlaylist', [
 				}
 				else {
 					req.sendStatus(err.status);
-					console.log(err.message);
-					return;
+					console.log(`Error while custom token fetch ${err.message}`);
 				}
 			});
 		})
