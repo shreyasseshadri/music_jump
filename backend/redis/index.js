@@ -11,8 +11,13 @@ function spotifyCredKey(username) {
 	return `sck:${username}`;
 }
 
+function spotifyAccessTokenKey(username) {
+	return `satk:${username}`
+}
+
 module.exports = {
 	redisClient,
 	userKey,
 	spotifyCredKey,
+	spotifyAccessTokenKey,
 };

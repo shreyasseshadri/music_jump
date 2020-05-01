@@ -2,7 +2,7 @@ var express = require('express');
 const fetch = require('node-fetch');
 const httpStatus = require('http-status-codes')
 var router = express.Router();
-const { redisClient } = require('../../../../../redis');
+const { redisClient, spotifyCredKey, spotifyAccessTokenKey } = require('../../../../../redis');
 
 const { clientAppId, clientSecret } = process.env;
 const myState = 'random_string_shreyas';
@@ -63,20 +63,35 @@ router.get('/callback', function (req, res) {
 			res.status(httpStatus.INTERNAL_SERVER_ERROR).send(`Error in fetching token: ${json.error}`);
 			return;
 		}
-		const { access_token, refresh_token } = json;
+		const { access_token, refresh_token, expires_in } = json;
 		getUser(access_token, (err, user) => {
 			if (err) {
 				if (err.status === httpStatus.INTERNAL_SERVER_ERROR) {
-					res.send(err.status);
+					res.sendStatus(err.status);
 					console.log(err.message);
 					return;
 				}
 				res.status(err.status).send(`Error while retrieving user info: ${err.message}`);
 				return;
 			}
-			res.json(user);
-			redisClient.set(user.id, JSON.stringify(user));
-			redisClient.get(user.id, redis.print);
+			redisClient.hmset(spotifyCredKey(req.user.username), "spotify_id", user.id, "refresh_token", refresh_token,
+				(err) => {
+					if (err) {
+						res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+						console.log(err);
+						return;
+					}
+					else {
+						redisClient.set(spotifyAccessTokenKey(req.user.username), access_token, 'EX', expires_in, (err) => {
+							if (err) {
+								console.log(err);
+								res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+								return;
+							}
+						});
+						res.json(user);
+					}
+				});
 		});
 	});
 
@@ -98,31 +113,5 @@ function getUser(access_token, callback) {
 		})
 		.catch((e) => callback({ status: httpStatus.INTERNAL_SERVER_ERROR, message: e.message }, null));
 }
-
-
-function makePlaylist(playlistName, playlistDesc, userID, access_token) {
-	return fetch(`https://api.spotify.com/v1/users/${userID}/playlists`, {
-		"headers": {
-			"authorization": `Bearer ${access_token}`
-		},
-		"body": JSON.stringify({
-			"name": playlistName,
-			"description": playlistDesc,
-			"public": false
-		}),
-		"method": "POST"
-	});
-}
-
-/*
-makePlaylist("Playlist from backend", "Some description", userID, access_token).then(async (resp) => {
-	const json = await resp.json();
-	if (resp.status !== httpStatus.CREATED) {
-		res.status(httpStatus.INTERNAL_SERVER_ERROR).send(`Error while creating playlist : ${json.error.message}`);
-		return;
-	}
-	res.status(httpStatus.OK).send("Successfully made playlist");
-})
-*/
 
 module.exports = router;
