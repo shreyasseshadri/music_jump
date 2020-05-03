@@ -8,7 +8,3 @@
 |___backend/
 
 ```
-
-## Ownership
-* 62.50% srinskit 
-* 37.50% shreyasseshadri
