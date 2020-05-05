@@ -9,6 +9,7 @@ const RedisStore = require('connect-redis')(session);
 // Configure
 const { redisClient } = require('./redis');
 require('./passport');
+const cors = require('./cors');
 
 // Routers
 var apiRouter = require('./routes/api');
@@ -16,13 +17,14 @@ var defaultRouter = require('./routes/default');
 
 var app = express();
 app.use(logger('dev'));
+app.use(cors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
 	session({
 		store: new RedisStore({ client: redisClient }),
-		secret: process.env.express_session_secret,
+		secret: process.env.expressSessionSecret,
 		resave: false,
 		saveUninitialized: false,
 	})
