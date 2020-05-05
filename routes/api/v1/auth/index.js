@@ -6,12 +6,13 @@ const { check, body, validationResult } = require('express-validator');
 var passport = require('passport');
 
 router.post('/signup', [
-	body('username').not().isEmpty().trim(),
-	body('password').not().isEmpty().trim()
+	body('username').not().isEmpty().withMessage('invalid username').trim(),
+	body('password').not().isEmpty().withMessage('invalid password').trim()
 ], function (req, res) {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+		res.statusMessage = errors.array().map(e => e.msg).join(', ');
+		return res.sendStatus(httpStatus.BAD_REQUEST);
 	}
 	const { username, password } = req.body;
 	redisClient.hgetall(userKey(username), (err, user) => {
@@ -25,12 +26,13 @@ router.post('/signup', [
 });
 
 router.post('/login', [
-	body('username').not().isEmpty().trim(),
-	body('password').not().isEmpty().trim()
+	body('username').not().isEmpty().withMessage('invalid username').trim(),
+	body('password').not().isEmpty().withMessage('invalid password').trim()
 ], function (req, res, next) {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+		res.statusMessage = errors.array().map(e => e.msg).join(', ');
+		return res.sendStatus(httpStatus.BAD_REQUEST);
 	}
 	passport.authenticate('local', function (err, user) {
 		if (err || !user) {
