@@ -10,11 +10,11 @@ const myState = 'random_string_shreyas';
 
 router.get('/authorize', function (req, res) {
 	const authUrl = 'https://accounts.spotify.com/authorize';
-	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private"];
+	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private","user-library-read"];
 	const params = {
 		client_id: clientAppId,
 		response_type: 'code',
-		redirect_uri: 'http://localhost:3000/api/v1/spotify/auth/callback',
+		redirect_uri: 'http://localhost:5000/api/v1/spotify/auth/callback',
 		scope: scopes.join(' '),
 		state: myState,
 	}
@@ -41,7 +41,7 @@ router.get('/callback', function (req, res) {
 	const postBody = {
 		grant_type: "authorization_code",
 		code: code,
-		redirect_uri: "http://localhost:3000/api/v1/spotify/auth/callback"
+		redirect_uri: "http://localhost:5000/api/v1/spotify/auth/callback"
 	};
 
 	fetch(apiTokenUrl, {

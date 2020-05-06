@@ -1,7 +1,31 @@
 const httpStatus = require('http-status-codes');
 const { urlEncodedBody, customFetch } = require('../../../../../helpers');
 const { clientAppId, clientSecret } = process.env;
-const { redisClient, spotifyAccessTokenKey } = require("../../../../../redis")
+const { redisClient, spotifyAccessTokenKey, spotifyCredKey } = require("../../../../../redis");
+
+function fetchDetails(username, callback) {
+	redisClient.hgetall(spotifyCredKey(username), (err, user) => {
+		if (err) {
+			callback({
+				status: httpStatus.INTERNAL_SERVER_ERROR,
+				message: `Error while retrieving spotify credentials: ${err}`
+			}, null);
+			return;
+		}
+
+		getToken(username, user.refresh_token, (err, access_token) => {
+			if (access_token) {
+				callback(null, { user, access_token });
+			}
+			else {
+				callback({
+					status: httpStatus.INTERNAL_SERVER_ERROR,
+					message: `Error while custom token fetch ${err.message}`
+				}, null);
+			}
+		});
+	});
+}
 
 function getToken(username, refresh_token, callback) {
 	redisClient.hgetall(spotifyAccessTokenKey(username), (err, access_token) => {
@@ -39,4 +63,4 @@ function refreshAuthToken(refreshToken, callback) {
 	customFetch("https://accounts.spotify.com/api/token", fetchOptions, httpStatus.OK, callback);
 }
 
-module.exports = { getToken };
+module.exports = { fetchDetails };
