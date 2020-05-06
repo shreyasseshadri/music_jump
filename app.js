@@ -17,7 +17,6 @@ var defaultRouter = require('./routes/default');
 
 var app = express();
 app.use(logger('dev'));
-app.use(cors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -32,7 +31,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/api', apiRouter);
+app.use('/api', cors, apiRouter);
 app.use('/', defaultRouter);
 app.use(function (req, res) {
 	res.sendStatus(httpStatus.NOT_FOUND);
