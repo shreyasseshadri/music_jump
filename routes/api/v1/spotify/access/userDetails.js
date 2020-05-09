@@ -28,7 +28,7 @@ function fetchDetails(username, callback) {
 }
 
 function getToken(username, refresh_token, callback) {
-	redisClient.hgetall(spotifyAccessTokenKey(username), (err, access_token) => {
+	redisClient.get(spotifyAccessTokenKey(username), (err, access_token) => {
 		if (!access_token) {
 			refreshAuthToken(refresh_token, async (err, resp) => {
 				if (err) {
