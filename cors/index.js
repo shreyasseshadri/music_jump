@@ -3,6 +3,8 @@ const httpStatus = require('http-status-codes');
 const allowedOrigins = [
 	'http://localhost:3000',
 	'http://localhost:5000',
+	'https://music.amazon.in',
+	process.env.MOZ_EXTENSION_ORIGIN,
 ];
 
 const exceptionRoutes = [
