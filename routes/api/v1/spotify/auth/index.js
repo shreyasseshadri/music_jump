@@ -6,27 +6,30 @@ const { urlEncodedBody } = require('../../../../../helpers');
 const { redisClient, spotifyCredKey, spotifyAccessTokenKey } = require('../../../../../redis');
 
 const { clientAppId, clientSecret } = process.env;
-const myState = 'random_string_shreyas';
 
 router.get('/authorize', function (req, res) {
+	console.log(req.query.redirect_uri)
+	const redirect_uri = req.query.redirect_uri || 'http://localhost:5000/api/v1/spotify/auth/callback';
 	const authUrl = 'https://accounts.spotify.com/authorize';
-	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private","user-library-read"];
+	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private", "user-library-read"];
 	const params = {
 		client_id: clientAppId,
 		response_type: 'code',
-		redirect_uri: 'http://localhost:5000/api/v1/spotify/auth/callback',
+		redirect_uri,
 		scope: scopes.join(' '),
-		state: myState,
+		state: JSON.stringify({ redirect_uri }),
 	}
-	res.redirect(`${authUrl}?${urlEncodedBody(params)}`);
+	if (req.query.redirect_uri) {
+		res.json({ redirect_uri: `${authUrl}?${urlEncodedBody(params)}` });
+	}
+	else {
+		// Support tester site
+		res.redirect(redirect_uri);
+	}
 });
 
 router.get('/callback', function (req, res) {
-	var state = req.query.state;
-	if (state !== myState) {
-		res.status(httpStatus.UNAUTHORIZED).send("States did not match");
-		return;
-	}
+	var { redirect_uri } = JSON.parse(req.query.state);
 	if (req.query.error) {
 		res.status(httpStatus.UNAUTHORIZED).send(req.query.error);
 		return;
@@ -40,8 +43,8 @@ router.get('/callback', function (req, res) {
 	const apiTokenUrl = 'https://accounts.spotify.com/api/token';
 	const postBody = {
 		grant_type: "authorization_code",
-		code: code,
-		redirect_uri: "http://localhost:5000/api/v1/spotify/auth/callback"
+		code,
+		redirect_uri,
 	};
 
 	fetch(apiTokenUrl, {
@@ -83,7 +86,7 @@ router.get('/callback', function (req, res) {
 								return;
 							}
 						});
-						res.json(user);
+						res.sendStatus(httpStatus.OK);
 					}
 				});
 		});
