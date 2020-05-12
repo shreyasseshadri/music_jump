@@ -5,6 +5,7 @@ const allowedOrigins = [
 	'http://localhost:5000',
 	'https://music.amazon.in',
 	process.env.MOZ_EXTENSION_ORIGIN,
+	process.env.CHROME_EXTENSION_ORIGIN
 ];
 
 const exceptionRoutes = [
@@ -50,3 +51,4 @@ function cors(req, res, next) {
 
 
 module.exports = cors;
+
