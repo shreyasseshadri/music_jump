@@ -25,6 +25,12 @@ function amazonPlaylistKey(username, playlistID) {
 	return `apk:${username}:${playlistID}`;
 }
 
+
+function amazonAlbumKey(username, albumID) {
+	// Todo: should album be protected per user?
+	return `aak:${username}:${albumID}`;
+}
+
 module.exports = {
 	redisClient,
 	userKey,
@@ -32,4 +38,5 @@ module.exports = {
 	spotifyAccessTokenKey,
 	amazonCollectionKey,
 	amazonPlaylistKey,
+	amazonAlbumKey,
 };
