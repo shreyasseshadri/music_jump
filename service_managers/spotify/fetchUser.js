@@ -1,7 +1,7 @@
 const httpStatus = require('http-status-codes');
-const { urlEncodedBody, customFetch } = require('../../../../../helpers');
+const { urlEncodedBody, customFetch } = require('../../helpers');
 const { clientAppId, clientSecret } = process.env;
-const { redisClient, spotifyAccessTokenKey, spotifyCredKey } = require("../../../../../redis");
+const { redisClient, spotifyAccessTokenKey, spotifyCredKey } = require("../../redis");
 
 function fetchDetails(username, callback) {
 	redisClient.hgetall(spotifyCredKey(username), (err, user) => {

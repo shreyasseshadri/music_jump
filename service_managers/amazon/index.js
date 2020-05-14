@@ -9,6 +9,10 @@ class Amazon {
 		done(null, { username: this.username });
 	}
 
+	isAuth() {
+		return true;
+	}
+
 	importDump(data, done) {
 		// Note: Importing all fields. Validation required.
 		let { playlists, albums } = data;
