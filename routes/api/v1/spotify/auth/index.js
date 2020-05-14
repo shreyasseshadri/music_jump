@@ -11,7 +11,7 @@ router.get('/authorize', function (req, res) {
 	console.log(req.query.redirect_uri)
 	const redirect_uri = req.query.redirect_uri || 'http://localhost:5000/api/v1/spotify/auth/callback';
 	const authUrl = 'https://accounts.spotify.com/authorize';
-	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private", "user-library-read"];
+	const scopes = ["user-read-private", "playlist-modify-public", "playlist-read-private", "playlist-modify-private", "user-library-read","user-library-modify"];
 	const params = {
 		client_id: clientAppId,
 		response_type: 'code',

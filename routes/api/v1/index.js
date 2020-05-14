@@ -13,5 +13,6 @@ router.use(function (req, res, next) {
 });
 router.use('/spotify', require('./spotify'));
 router.use('/amazon', require('./amazon'));
+router.use('/migrate',require('./migrate'));
 
 module.exports = router;
