@@ -11,5 +11,6 @@ router.use('/collection', require('./collection'));
 // Access a playlist
 // TODO: validate 'id'
 router.use('/playlist/:id', require('./playlist'));
+router.use('/album/:id', require('./album'));
 
 module.exports = router;
