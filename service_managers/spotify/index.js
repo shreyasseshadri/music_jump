@@ -157,7 +157,7 @@ class Spotify {
 						"authorization": `Bearer ${access_token}`
 					}
 				}
-				customFetch(`https://api.spotify.com/v1/albums/${albumId}/tracks`, fetchOptions, httpStatus.OK, callback);
+				customFetch(`https://api.spotify.com/v1/albums/${albumId}`, fetchOptions, httpStatus.OK, callback);
 			}
 		});
 	}
