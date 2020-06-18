@@ -25,7 +25,7 @@ Web APIs from [spotify](https://developer.spotify.com/documentation/web-api/refe
 
 #### Amazon Music Service
 
-Since Amazon does not offer any public APIs,  a browser [extensions](https://github.com/shreyasseshadri/potential-invention/tree/master/extensions) have been used to get the necessary information for explorer and migration **from Amazon music**. This is the reason why the migration is not yet supported from another music service **to Amazon music**.
+Since Amazon does not offer any public APIs, browser [extensions](https://github.com/shreyasseshadri/potential-invention/tree/master/extensions) have been used to get the necessary information for explorer and migration **from Amazon music**. This is the reason why the migration is not yet supported from another music service **to Amazon music**.
 
 ### Database
 
