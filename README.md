@@ -30,3 +30,10 @@ Since Amazon does not offer any public APIs, browser [extensions](https://github
 ### Database
 
 Currently, Redis is used as the database for our application.
+
+
+## Demos
+
+### Migrating album based on name
+
+![Demo](demo/migrate_album.gif)
