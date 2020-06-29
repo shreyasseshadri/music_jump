@@ -1,21 +1,35 @@
 var express = require('express');
 const httpStatus = require('http-status-codes');
 var router = express.Router();
-const { body, validationResult } = require('express-validator');
+const { body, validationResult, oneOf } = require('express-validator');
 const Spotify = require("../../../../service_managers/spotify");
-const Amazon = require("../../../../service_managers/amazon")
+const Amazon = require("../../../../service_managers/amazon");
 
 const nameToServiceClass = {
 	'spotify': Spotify,
 	'amazon': Amazon
-}
+};
+
+const supportedServices = ["spotify", "amazon"];
+const supportedMigrationTypes = ["album", "playlist"];
 
 router.post('/', [
-	body('toServiceName').not().isEmpty().trim(), //TODO: assert if values are valid services, types etc.
-	body('fromServiceName').not().isEmpty().trim(),
-	body('migrationType').not().isEmpty().trim(),
-	body('migrationData').not().isEmpty().trim(),
-], async function (req, res) {
+	body('toServiceName').not().isEmpty().trim().isIn(supportedServices),
+	body('fromServiceName').not().isEmpty().trim().isIn(supportedServices),
+	body('migrationType').not().isEmpty().trim().isIn(supportedMigrationTypes),
+	body('migrationData').not().isEmpty().withMessage("Must contain migration Data")
+], oneOf([
+	[	//Incase of Album
+		body('migrationType').equals("album"),
+		body('migrationData.albumName').not().isEmpty().withMessage("Must Contain abum name")
+	],
+	[	//Incase of Playlist
+		body('migrationType').equals("playlist"),
+		body('migrationData.playlistName').not().isEmpty().withMessage("Must Contain playlist name"),
+		body('migrationData.songs').not().isEmpty().isArray({ max: 100, min: 1 }).withMessage("Songs Must be an array with size 1-100"),
+		body('migrationData.songs.*.name').not().isEmpty().isString().withMessage("Song name must be a string")
+	]
+]), async function (req, res) {
 
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {

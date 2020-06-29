@@ -207,12 +207,13 @@ class Spotify {
 				break
 			}
 			case "playlist": {
+				callback(null,{success:true});
 				break
 			}
 		}
 	}
 
-	migrateAlbum(albumName, type, callback) {
+	migrateAlbum({ albumName }, type, callback) {
 
 		this.nameToId(albumName, type, (err, albumId) => {
 
@@ -224,7 +225,7 @@ class Spotify {
 					}, null);
 				}
 				else {
-					callback(null, resp);
+					callback(null, {success: true,albumUrl:`https://open.spotify.com/album/${albumId}`});
 				}
 			})
 		})
