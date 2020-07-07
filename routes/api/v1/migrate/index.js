@@ -30,10 +30,10 @@ router.post('/', [
 		body('migrationData.songs.*.name').not().isEmpty().isString().withMessage("Song name must be a string")
 	]
 ]), async function (req, res) {
-
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+		res.statusMessage = errors.array().map(e => e.msg).join(', ');
+		return res.sendStatus(httpStatus.BAD_REQUEST);
 	}
 
 	const { toServiceName, fromServiceName, migrationType, migrationData } = req.body;
