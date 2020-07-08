@@ -11,8 +11,8 @@ Services currently integrated into Music Jump:
 Feature Progress
 - [x] Music Explorer to explore your collections on all services
 - [x] Migration of albums from Amazon to spotify
-- [ ] Migration of playlist from Amazon to spotify
-
+- [x] Migration of playlist from Amazon to spotify
+- [ ] Caching of search results/ids
 ## Project Overview
 
 ### Our API
@@ -34,6 +34,6 @@ Currently, Redis is used as the database for our application.
 
 ## Demos
 
-### Migrating album based on name
+### Migrating album and playlist based on name
 
-![Demo](demo/migrate_album.gif)
+![Demo](demo/migrate.gif)

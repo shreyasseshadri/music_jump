@@ -26,7 +26,7 @@ router.post('/', [
 	[	//Incase of Playlist
 		body('migrationType').equals("playlist"),
 		body('migrationData.playlistName').not().isEmpty().withMessage("Must Contain playlist name"),
-		body('migrationData.songs').not().isEmpty().isArray({ max: 100, min: 1 }).withMessage("Songs Must be an array with size 1-100"),
+		body('migrationData.songs').not().isEmpty().isArray({ min: 1 }).withMessage("Songs Must be an array with size > 1"),
 		body('migrationData.songs.*.name').not().isEmpty().isString().withMessage("Song name must be a string")
 	]
 ]), async function (req, res) {

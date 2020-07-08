@@ -9,9 +9,9 @@ router.get('/:playlistId', function (req, res) {
 		res.status(httpStatus.BAD_GATEWAY).send(" Must send the playlisyID");
 		return;
 	}
-	
+
 	const spotify = new Spotify(req);
-	spotify.getPlaylist(req.params.playlistId,(err,resp) => {
+	spotify.getPlaylist(req.params.playlistId, (err, resp) => {
 		if (err) {
 			res.sendStatus(err.status);
 			console.log(`Error while getting playlist : ${err.message}`);
@@ -33,13 +33,13 @@ router.post('/', [
 		}
 
 		const spotify = new Spotify(req);
-		spotify.makePlaylist(req.body,(err,resp) => {
+		spotify.makePlaylist(req.body, (err, resp) => {
 			if (err) {
 				res.sendStatus(err.status);
 				console.log(`Error while creating playlist : ${err.message}`);
 				return;
 			}
-			else res.status(httpStatus.OK).send("Successfully made playlist");
+			else res.status(httpStatus.OK).json({ succes: true, playlistID: resp.id });
 		});
 	});
 
