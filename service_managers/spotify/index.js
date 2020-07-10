@@ -41,7 +41,39 @@ class Spotify {
 						"authorization": `Bearer ${access_token}`
 					}
 				}
-				customFetch(`https://api.spotify.com/v1/playlists/${playlistId}`, fetchOptions, httpStatus.OK, callback);
+				customFetch(`https://api.spotify.com/v1/playlists/${playlistId}`, fetchOptions, httpStatus.OK, (err,playlist) => {
+					if (err) {
+						res.sendStatus(err.status);
+						console.log(`Error while creating playlist : ${err.message}`);
+						return;
+					}
+					else {
+						const response = {
+							id: playlist.id,
+							type: 'playlist',
+							title: playlist.name,
+							thumbnails: playlist.images,
+							description: playlist.description,
+							external_url: playlist.external_urls.spotify,
+							tracks: playlist.tracks.items.map(item => ({
+								id: item.track.id,
+								type: 'track',
+								title: item.track.name,
+								duration: item.track.duration_ms,
+								album: { id: item.track.album.id, title: item.track.album.name },
+								thumbnails: item.track.album.images,
+								artists: item.track.album.artists.map(artist => ({
+									name: artist.name,
+									external_url: artist.external_urls.spotify
+								})),
+								external_url: item.track.external_urls.spotify,
+								preview_url: item.track.preview_url
+							}))
+
+						}
+						callback(null,response);
+					}
+				});
 			}
 		});
 	}
@@ -104,7 +136,7 @@ class Spotify {
 					if (err) {
 						callback({
 							status: httpStatus.INTERNAL_SERVER_ERROR,
-							message: `Error while fetching albums: ${err}`
+							message: `Error while fetching albums: ${JSON.stringify(err)}`
 						}, null);
 					}
 					else {
@@ -112,10 +144,32 @@ class Spotify {
 							if (err) {
 								callback({
 									status: httpStatus.INTERNAL_SERVER_ERROR,
-									message: `Error while fetching playlists: ${err}`
+									message: `Error while fetching playlists: ${JSON.stringify(err)}`
 								}, null);
 							}
-							else callback(null, { albums, playlists });
+							else {
+								const response = {
+									id: "spotify-collection",
+									title: "Spotify",
+									type: "collection",
+									albums: albums.items.map((item) => ({
+										id: item.album.id,
+										type: 'album',
+										title: item.album.name,
+										thumbnails: item.album.images,
+										external_url: item.album.external_urls.spotify
+									})),
+									playlists: playlists.items.map((playlist) => ({
+										id: playlist.id,
+										type: 'playlist',
+										title: playlist.name,
+										thumbnails: playlist.images,
+										description: playlist.description,
+										external_url: playlist.external_urls.spotify
+									}))
+								};
+								callback(null, response);
+							};
 						});
 					}
 				});
@@ -157,7 +211,37 @@ class Spotify {
 						"authorization": `Bearer ${access_token}`
 					}
 				}
-				customFetch(`https://api.spotify.com/v1/albums/${albumId}`, fetchOptions, httpStatus.OK, callback);
+				customFetch(`https://api.spotify.com/v1/albums/${albumId}`, fetchOptions, httpStatus.OK, (err, album) => {
+					if (err) {
+						res.sendStatus(err.status);
+						console.log(`Error while fetching album: ${err.message}`);
+						return;
+					}
+					else {
+						const response = {
+							id: album.id,
+							type: 'album',
+							title: album.name,
+							thumbnails: album.images,
+							external_url: album.external_urls.spotify,
+							tracks: album.tracks.items.map(item => ({
+								id: item.id,
+								type: 'track',
+								title: item.name,
+								duration: item.duration_ms,
+								album: { id: album.id, title: album.name },
+								thumbnails: album.images,
+								artists: item.artists.map(artist => ({
+									name: artist.name,
+									external_url: artist.external_urls.spotify
+								})),
+								external_url: item.external_urls.spotify,
+								preview_url: item.preview_url
+							}))
+						}
+						callback(null,response);
+					}
+				});
 			}
 		});
 	}
