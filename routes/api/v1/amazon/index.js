@@ -6,11 +6,11 @@ const httpStatus = require('http-status-codes');
 router.use('/dump', require('./dump'));
 
 // Access entire music collection
-router.use('/collection', require('./collection'));
+router.use('/access/collection', require('./collection'));
 
 // Access a playlist
 // TODO: validate 'id'
-router.use('/playlist/:id', require('./playlist'));
-router.use('/album/:id', require('./album'));
+router.use('/access/playlist/:id', require('./playlist'));
+router.use('/access/album/:id', require('./album'));
 
 module.exports = router;
