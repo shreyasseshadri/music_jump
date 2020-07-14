@@ -58,7 +58,13 @@ class Amazon {
 	getCollection(done) {
 		redisClient.get(
 			amazonCollectionKey(this.username),
-			(err, data) => done(err, err ? null : JSON.parse(data))
+			(err, data) => done(err, err ? null : {
+				id: "amazon",
+				title: "Amazon",
+				type: "collection",
+				description: "Your Amazon collection",
+				...JSON.parse(data)
+			})
 		)
 	}
 
