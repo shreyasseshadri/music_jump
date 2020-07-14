@@ -71,8 +71,8 @@ router.get('/me', function (req, res) {
 					id: service,
 					type: 'service',
 					title: services[index].getTitle(),
-					Connected: auths[index],
-					thumb: `${host}/images/service_logos/${service}.png`
+					connected: auths[index],
+					thumbnails: [{url:`${host}/images/service_logos/${service}.png`}]
 				}))
 			};
 			res.status(httpStatus.OK).json(response);
