@@ -9,9 +9,27 @@ class Amazon {
 		done(null, { username: this.username });
 	}
 
-	isAuth() {
-		return true;
+	getTitle(){
+		return "Amazon";
 	}
+
+	async isAuth() {
+		return new Promise((resolve, reject) => {
+			redisClient.exists(amazonCollectionKey(this.username), (err, reply) => {
+				if (err) {
+					reject(err);
+				}
+				if (reply === 1) {
+					resolve(true);
+				}
+				else {
+					resolve(false);
+				}
+			})
+
+		})
+	}
+
 
 	importDump(data, done) {
 		// Note: Importing all fields. Validation required.

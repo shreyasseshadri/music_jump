@@ -2,15 +2,8 @@ var express = require('express');
 const httpStatus = require('http-status-codes');
 var router = express.Router();
 const { body, validationResult, oneOf } = require('express-validator');
-const Spotify = require("../../../../service_managers/spotify");
-const Amazon = require("../../../../service_managers/amazon");
+const { serviceClasses, supportedServices } = require("../../../../service_managers");
 
-const nameToServiceClass = {
-	'spotify': Spotify,
-	'amazon': Amazon
-};
-
-const supportedServices = ["spotify", "amazon"];
 const supportedMigrationTypes = ["album", "playlist"];
 
 router.post('/', [
@@ -38,8 +31,8 @@ router.post('/', [
 
 	const { toServiceName, fromServiceName, migrationType, migrationData } = req.body;
 
-	const toService = new nameToServiceClass[toServiceName](req);
-	const fromService = new nameToServiceClass[fromServiceName](req);
+	const toService = new serviceClasses[toServiceName](req);
+	const fromService = new serviceClasses[fromServiceName](req);
 
 	if (!await toService.isAuth()) {
 		res.status(httpStatus.UNAUTHORIZED).send(`${toServiceName} not authenticated`);

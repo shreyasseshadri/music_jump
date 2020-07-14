@@ -9,6 +9,10 @@ class Spotify {
 		this.username = req.user.username;
 	}
 
+	getTitle(){
+		return "Spotify";
+	}
+
 	async isAuth() {
 		return new Promise((resolve, reject) => {
 			redisClient.exists(spotifyCredKey(this.username), (err, reply) => {
@@ -19,7 +23,7 @@ class Spotify {
 					resolve(true);
 				}
 				else {
-					reject(false);
+					resolve(false);
 				}
 			})
 

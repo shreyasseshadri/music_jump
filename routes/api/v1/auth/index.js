@@ -4,6 +4,7 @@ const httpStatus = require('http-status-codes');
 const { redisClient, userKey } = require('../../../../redis');
 const { check, body, validationResult } = require('express-validator');
 var passport = require('passport');
+const { serviceClasses, supportedServices } = require("../../../../service_managers");
 
 router.post('/signup', [
 	body('username').not().isEmpty().withMessage('invalid username').trim(),
@@ -58,8 +59,27 @@ router.post('/logout', function (req, res) {
 
 router.get('/me', function (req, res) {
 	if (req.isAuthenticated()) {
-		res.json({
-			username: req.user.username,
+		const host = `http://localhost:${process.env.PORT}`;
+		const services = supportedServices.map((service) => new serviceClasses[service](req));
+		const authPromises = services.map((service) => service.isAuth());
+
+		Promise.all(authPromises)
+		.then((auths) => {
+			const response = {
+				username: req.user.username,
+				services: supportedServices.map((service,index) => ({
+					id: service,
+					type: 'service',
+					title: services[index].getTitle(),
+					Connected: auths[index],
+					thumb: `${host}/images/service_logos/${service}.png`
+				}))
+			};
+			res.status(httpStatus.OK).json(response);
+		})
+		.catch(err => {
+			console.log(err);
+			res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
 		});
 	}
 	else {
