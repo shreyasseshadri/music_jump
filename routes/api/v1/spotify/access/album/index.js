@@ -14,7 +14,7 @@ router.get('/:albumId', function (req, res) {
 	spotify.getAlbum(req.params.albumId, (err, resp) => {
 		if (err) {
 			res.sendStatus(err.status);
-			console.log(`Error while fetching album: ${err.message}`);
+			console.log(`Error while fetching album: ${JSON.stringify(err.message)}`);
 			return;
 		}
 		else res.status(httpStatus.OK).json(resp);

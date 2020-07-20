@@ -217,8 +217,10 @@ class Spotify {
 				}
 				customFetch(`https://api.spotify.com/v1/albums/${albumId}`, fetchOptions, httpStatus.OK, (err, album) => {
 					if (err) {
-						res.sendStatus(err.status);
-						console.log(`Error while fetching album: ${err.message}`);
+						callback({
+							status:httpStatus.INTERNAL_SERVER_ERROR,
+							message: err
+						},null);
 						return;
 					}
 					else {
@@ -228,6 +230,10 @@ class Spotify {
 							title: album.name,
 							thumbnails: album.images,
 							external_url: album.external_urls.spotify,
+							artists: album.artists.map(artist => ({
+								name: artist.name,
+								external_url: artist.external_urls.spotify
+							})),
 							tracks: album.tracks.items.map(item => ({
 								id: item.id,
 								type: 'track',
@@ -362,7 +368,7 @@ class Spotify {
 
 		Promise.all(searchPromises)
 			.then(() => {
-				this.makePlaylist({ playlistName, playlistDesc: ' ' }, (err, resp) => {
+				this.makePlaylist({ playlistName, playlistDesc: '' }, (err, resp) => {
 					const playlistId = resp.id;
 					if (err) {
 						callback({
