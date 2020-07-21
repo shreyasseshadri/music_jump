@@ -3,6 +3,7 @@ const httpStatus = require('http-status-codes');
 const { customFetch, urlEncodedBody } = require("../../helpers");
 const { redisClient, spotifyCredKey } = require('../../redis');
 
+const NO_RESULTS = 'NO_RESULTS';
 
 class Spotify {
 	constructor(req) {
@@ -275,9 +276,10 @@ class Spotify {
 					});
 				}
 				else if (resp[body].items.length < 1) {
+					console.log(JSON.stringify(resp[body]));
 					reject({
-						status: httpStatus.BAD_REQUEST,
-						message: `Search returned no results: ${err}`
+						status: NO_RESULTS,
+						message: `No results while searching ${name} of ${searchType} ID: ${JSON.stringify(err)}`
 					});
 				}
 				else {
@@ -361,13 +363,30 @@ class Spotify {
 			searchPromises.push(
 				this.nameToId(song.name, type)
 					.then((id) => song.id = id)
-					.catch(err => callback(err, null))
+					.catch(err => {
+						if(err.status === NO_RESULTS){
+							song.id = null;
+						}
+						else{
+							callback(err,null);
+						}
+					})
 			);
 		});
 
 
 		Promise.all(searchPromises)
 			.then(() => {
+				songs = songs.filter((song) => song.id);
+
+				if(songs.length < 1){
+					callback({
+						status: httpStatus.BAD_REQUEST,
+						message: `No songs yielded search results`
+					},null);
+					return;
+				}
+
 				this.makePlaylist({ playlistName, playlistDesc: '' }, (err, resp) => {
 					const playlistId = resp.id;
 					if (err) {
@@ -408,19 +427,34 @@ class Spotify {
 	migrateAlbum({ albumName }, type, callback) {
 
 		this.nameToId(albumName, type, (err, albumId) => {
-
-			this.addAlbum(albumId, (err, resp) => {
-				if (err) {
+			if(err){
+				if(err.status === NO_RESULTS){
 					callback({
-						status: httpStatus.INTERNAL_SERVER_ERROR,
-						message: err
-					}, null);
+						status: httpStatus.BAD_REQUEST,
+						message: `Album search returned no results`
+					},null);
 				}
-				else {
-					callback(null, { success: true, albumUrl: `https://open.spotify.com/album/${albumId}` });
+				else{
+					callback({
+						status:httpStatus.INTERNAL_SERVER_ERROR,
+						message:err
+					},null);
 				}
-			})
-		})
+			}
+			else{
+				this.addAlbum(albumId, (err, resp) => {
+					if (err) {
+						callback({
+							status: httpStatus.INTERNAL_SERVER_ERROR,
+							message: err
+						}, null);
+					}
+					else {
+						callback(null, { success: true, albumUrl: `https://open.spotify.com/album/${albumId}` });
+					}
+				})
+			}
+		});
 	}
 
 	addAlbum(albumId, callback) {

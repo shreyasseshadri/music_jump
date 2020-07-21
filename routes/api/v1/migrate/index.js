@@ -45,7 +45,7 @@ router.post('/', [
 
 	toService.migrate(migrationData, migrationType, (err, resp) => {
 		if (err) {
-			res.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+			res.sendStatus(err.status);
 			console.log(err.message);
 		}
 		else {
