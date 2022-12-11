@@ -8,7 +8,7 @@
   "dependencies": {
     "connect-redis": "^4.0.4",
     "debug": "~2.6.9",
-    "express": "~4.16.1",
+    "express": "~4.18.2",
     "express-session": "^1.17.1",
     "express-validator": "^6.4.0",
     "http-status-codes": "^1.4.0",
